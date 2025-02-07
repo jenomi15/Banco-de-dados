@@ -133,9 +133,7 @@ def buscar(conexao):
         cursor.close()
 
 
-
-
-def busca_geral(conexao, tabela, condicao=None, nome_coluna=None):
+def busca_geral(conexao, tabela, condicao, nome_coluna):
     cursor = conexao.cursor()
     try:
         
@@ -162,23 +160,49 @@ def busca_geral(conexao, tabela, condicao=None, nome_coluna=None):
     finally:
         cursor.close()
 
+def substring(conexao, tabela, condicao, nome_coluna):        
+    cursor = conexao.cursor()
+
+    try:
+        query = f"SELECT * FROM {tabela} WHERE {nome_coluna} LIKE {condicao}"
+        print(query)
+
+        cursor.execute(query)
+        return cursor.fetchall()
+
+    except Exception as e:
+        print(f"Erro ao buscar dados da tabela {tabela}: {e}")
+
+    finally:
+        cursor.close()
 
 def busca_do_usuario(conexao):
     try:
-       
-        tabela = input("Digite o nome da tabela que deseja pesquisar: ")
-        # Solicita ao usuário a coluna para o filtro (deixa em branco se não quiser filtrar por coluna específica)
-        nome_coluna = input("Deseja filtrar por uma coluna específica? (Digite o nome da coluna ou pressione Enter para continuar): ")
-        condicao = input("Deseja adicionar uma condição para filtrar os dados? (ex: id_cliente = 45 ou salario > 2000)\nDigite a condição ou pressione Enter para continuar sem filtro: ")
+        #Pesquisa serve para saber se ele vai querer a busca do tipo geral ou por substring
+        pesquisa = int(input("Qual tipo de busca deseja realizat?(1-geral / 2-substring)\n"))
+        if(pesquisa == 1):
+
+            tabela = input("Digite o nome da tabela que deseja pesquisar: ")
+            # Solicita ao usuário a coluna para o filtro (deixa em branco se não quiser filtrar por coluna específica)
+            nome_coluna = input("Deseja filtrar por uma coluna específica? (Digite o nome da coluna ou pressione Enter para continuar): ")
+            condicao = input("Deseja adicionar uma condição para filtrar os dados? (ex: id_cliente = 45 ou salario > 2000)\nDigite a condição ou pressione Enter para continuar sem filtro: ")
 
         
-        if condicao:
-            if "=" not in condicao:
-                print("Formato inválido para a condição. A condição deve ser no formato 'coluna = valor'.")
-                return
+            if condicao:
+                if "=" not in condicao:
+                    print("Formato inválido para a condição. A condição deve ser no formato 'coluna = valor'.")
+                    return
 
        
-        resultados = busca_geral(conexao, tabela, condicao if condicao else None, nome_coluna if nome_coluna else None)
+            resultados = busca_geral(conexao, tabela, condicao if condicao else None, nome_coluna if nome_coluna else None)
+
+        else:
+
+            tabela = input("Digite o nome da tabela que deseja pesquisar: ")
+            nome_coluna = input("Digite a coluna no qual a substring vai filtrar: ")
+            condicao = input("Adicione a substring que deseja buscar: ")    
+
+            resultados = substring(conexao, tabela, condicao, nome_coluna)    
 
         if resultados:
             print(f"Dados encontrados: {resultados}")
